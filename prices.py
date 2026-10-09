@@ -50,17 +50,21 @@ def get_current(ticker: str) -> tuple[float, str]:
     return float(price), currency
 
 
-def get_dividends_last_year(ticker: str) -> float:
-    """Return the dividends paid per share over the last 12 months, 0 if none."""
+def get_dividends_since(ticker: str, day: date) -> float:
+    """Return the dividends per share for someone who bought on `day`, 0 if none."""
     cached = _dividend_cache.get(ticker)
     if cached and time.monotonic() - cached[0] < DIVIDEND_CACHE_SECONDS:
-        return cached[1]
-    try:
-        history = yf.Ticker(ticker).history(period="1y", auto_adjust=False, actions=True)
-    except Exception as exc:
-        raise PriceError(f"Kunne ikke hente udbytte for {ticker}.") from exc
-    if len(history) == 0 or "Dividends" not in history:
-        raise PriceError(f"Intet udbytte fundet for {ticker}.")
-    total = float(history["Dividends"].fillna(0).sum())
-    _dividend_cache[ticker] = (time.monotonic(), total)
-    return total
+        payouts = cached[1]
+    else:
+        try:
+            history = yf.Ticker(ticker).history(period="max", auto_adjust=False, actions=True)
+        except Exception as exc:
+            raise PriceError(f"Kunne ikke hente udbytte for {ticker}.") from exc
+        if len(history) == 0 or "Dividends" not in history:
+            raise PriceError(f"Intet udbytte fundet for {ticker}.")
+        dividends = history["Dividends"].dropna()
+        dividends = dividends[dividends > 0]
+        payouts = [(when.date(), float(amount)) for when, amount in dividends.items()]
+        _dividend_cache[ticker] = (time.monotonic(), payouts)
+    # Shares bought on the ex-dividend date itself do not get that dividend.
+    return sum(amount for ex_date, amount in payouts if ex_date > day)
