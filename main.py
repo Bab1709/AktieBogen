@@ -52,12 +52,11 @@ def build_rows() -> list[dict]:
             row["current_value"] = holding["shares"] * current_price
             row["gain"] = row["current_value"] - row["buy_value"]
             row["gain_pct"] = row["gain"] / row["buy_value"] * 100
-            try:
-                dividends = prices.get_dividends_last_year(holding["ticker"])
-            except prices.PriceError:
-                row["yield_pct"] = None
-            else:
-                row["yield_pct"] = dividends / current_price * 100
+        try:
+            buy_date = date.fromisoformat(holding["buy_date"])
+            row["dividends"] = holding["shares"] * prices.get_dividends_since(holding["ticker"], buy_date)
+        except prices.PriceError:
+            row["dividends"] = None
         rows.append(row)
     return rows
 
