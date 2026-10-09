@@ -1,7 +1,7 @@
 # Project rules
 
 ## About this project
-This project is a new, empty repository with no source files yet, so there is no language, framework or tooling to describe. Update this section once the first code is added.
+This project is a small website for tracking a personal stock portfolio, run locally on a Mac. It is built with Python and Flask, uses yfinance for prices, and stores the holdings in a local portfolio.json that is never committed.
 
 ## Git workflow
 - Never commit or push directly to main.
