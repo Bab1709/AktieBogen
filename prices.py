@@ -10,6 +10,8 @@ _current_cache = {}
 # Dividends change a few times a year at most, so they are cached much longer.
 DIVIDEND_CACHE_SECONDS = 6 * 60 * 60
 _dividend_cache = {}
+# Some exchanges quote prices in hundredths of the currency, e.g. pence in London.
+MINOR_UNITS = {"GBp": ("GBP", 100), "GBX": ("GBP", 100), "ILA": ("ILS", 100), "ZAc": ("ZAR", 100)}
 
 
 class PriceError(Exception):
@@ -48,6 +50,18 @@ def get_current(ticker: str) -> tuple[float, str]:
         raise PriceError(f"Ingen kurs fundet for {ticker}.")
     _current_cache[ticker] = (time.monotonic(), float(price), currency)
     return float(price), currency
+
+
+def get_rate_to_dkk(currency: str) -> float:
+    """Return how many Danish kroner one unit of `currency` is worth right now."""
+    currency, divisor = MINOR_UNITS.get(currency, (currency, 1))
+    if currency == "DKK":
+        return 1 / divisor
+    try:
+        rate, _ = get_current(f"{currency}DKK=X")
+    except PriceError as exc:
+        raise PriceError(f"Kunne ikke hente valutakurs for {currency}.") from exc
+    return rate / divisor
 
 
 def get_dividends_since(ticker: str, day: date) -> float:
