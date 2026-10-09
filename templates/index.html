@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mine aktier</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main>
+    <h1>Mine aktier</h1>
+
+    <form class="add" method="post" action="{{ url_for('add') }}">
+      <label>Ticker
+        <input name="ticker" placeholder="AAPL eller NOVO-B.CO" value="{{ form.get('ticker', '') }}" required autofocus>
+      </label>
+      <label>Antal
+        <input name="shares" inputmode="decimal" value="{{ form.get('shares', '') }}" required>
+      </label>
+      <label>Købsdato
+        <input name="buy_date" type="date" max="{{ today }}" value="{{ form.get('buy_date', '') }}" required>
+      </label>
+      <label>Købskurs (valgfri)
+        <input name="buy_price" inputmode="decimal" placeholder="Lukkekurs på købsdatoen" value="{{ form.get('buy_price', '') }}">
+      </label>
+      <button type="submit">Tilføj aktie</button>
+    </form>
+
+    {% if error %}
+      <p class="error" role="alert">{{ error }}</p>
+    {% endif %}
+
+    {% if rows %}
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Aktie</th>
+              <th class="num">Antal</th>
+              <th>Købsdato</th>
+              <th class="num">Købskurs</th>
+              <th class="num">Købsværdi</th>
+              <th class="num">Nuværende værdi</th>
+              <th class="num">Gevinst/tab</th>
+              <th class="num">%</th>
+              <th>Valuta</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in rows %}
+              <tr>
+                <td>{{ row.ticker }}</td>
+                <td class="num">{{ row.shares | quantity }}</td>
+                <td>{{ row.buy_date }}</td>
+                <td class="num">{{ row.buy_price | amount }}</td>
+                <td class="num">{{ row.buy_value | amount }}</td>
+                {% if row.current_value is none %}
+                  <td class="num muted" colspan="3">Kursen kunne ikke hentes</td>
+                {% else %}
+                  {% set tone = 'gain' if row.gain > 0 else ('loss' if row.gain < 0 else '') %}
+                  <td class="num">{{ row.current_value | amount }}</td>
+                  <td class="num {{ tone }}">{{ '+' if row.gain > 0 }}{{ row.gain | amount }}</td>
+                  <td class="num {{ tone }}">{{ '+' if row.gain > 0 }}{{ row.gain_pct | amount }} %</td>
+                {% endif %}
+                <td>{{ row.currency }}</td>
+                <td>
+                  <form method="post" action="{{ url_for('delete', holding_id=row.id) }}"
+                        data-ticker="{{ row.ticker }}"
+                        onsubmit="return confirm('Slet ' + this.dataset.ticker + '?')">
+                    <button type="submit" class="delete">Slet</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="muted">Du har ikke tilføjet nogen aktier endnu.</p>
+    {% endif %}
+  </main>
+</body>
+</html>
