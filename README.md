@@ -24,6 +24,7 @@ python3 -m venv .venv
 - Skriv ticker-symbolet, som Yahoo Finance bruger det, fx `AAPL` eller `NOVO-B.CO` for danske aktier.
 - Købskurs er valgfri. Lader du feltet stå tomt, bruges lukkekursen på købsdatoen, eller seneste lukkekurs før den, hvis datoen er en weekend eller helligdag.
 - Beløb vises i aktiens egen valuta, som står i kolonnen "Valuta".
+- Kolonnen "Direkte afkast" viser det udbytte, aktien har udbetalt de seneste 12 måneder, i procent af den nuværende kurs. Aktier uden udbytte viser 0,00 %.
 - Har aktien haft et aktiesplit, siden du købte, så skriv det antal aktier, du har i dag, og købskursen omregnet til efter splittet. Den automatiske lukkekurs er allerede omregnet.
 
 ## Dine data

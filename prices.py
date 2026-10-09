@@ -7,6 +7,9 @@ import yfinance as yf
 
 CACHE_SECONDS = 300
 _current_cache = {}
+# Dividends change a few times a year at most, so they are cached much longer.
+DIVIDEND_CACHE_SECONDS = 6 * 60 * 60
+_dividend_cache = {}
 
 
 class PriceError(Exception):
@@ -45,3 +48,19 @@ def get_current(ticker: str) -> tuple[float, str]:
         raise PriceError(f"Ingen kurs fundet for {ticker}.")
     _current_cache[ticker] = (time.monotonic(), float(price), currency)
     return float(price), currency
+
+
+def get_dividends_last_year(ticker: str) -> float:
+    """Return the dividends paid per share over the last 12 months, 0 if none."""
+    cached = _dividend_cache.get(ticker)
+    if cached and time.monotonic() - cached[0] < DIVIDEND_CACHE_SECONDS:
+        return cached[1]
+    try:
+        history = yf.Ticker(ticker).history(period="1y", auto_adjust=False, actions=True)
+    except Exception as exc:
+        raise PriceError(f"Kunne ikke hente udbytte for {ticker}.") from exc
+    if len(history) == 0 or "Dividends" not in history:
+        raise PriceError(f"Intet udbytte fundet for {ticker}.")
+    total = float(history["Dividends"].fillna(0).sum())
+    _dividend_cache[ticker] = (time.monotonic(), total)
+    return total

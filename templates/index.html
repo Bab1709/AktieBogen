@@ -43,6 +43,7 @@
               <th class="num">Nuværende værdi</th>
               <th class="num">Gevinst/tab</th>
               <th class="num">%</th>
+              <th class="num" title="Udbytte de seneste 12 måneder i forhold til den nuværende kurs">Direkte afkast</th>
               <th>Valuta</th>
               <th></th>
             </tr>
@@ -56,12 +57,17 @@
                 <td class="num">{{ row.buy_price | amount }}</td>
                 <td class="num">{{ row.buy_value | amount }}</td>
                 {% if row.current_value is none %}
-                  <td class="num muted" colspan="3">Kursen kunne ikke hentes</td>
+                  <td class="num muted" colspan="4">Kursen kunne ikke hentes</td>
                 {% else %}
                   {% set tone = 'gain' if row.gain > 0 else ('loss' if row.gain < 0 else '') %}
                   <td class="num">{{ row.current_value | amount }}</td>
                   <td class="num {{ tone }}">{{ '+' if row.gain > 0 }}{{ row.gain | amount }}</td>
                   <td class="num {{ tone }}">{{ '+' if row.gain > 0 }}{{ row.gain_pct | amount }} %</td>
+                  {% if row.yield_pct is none %}
+                    <td class="num muted">–</td>
+                  {% else %}
+                    <td class="num">{{ row.yield_pct | amount }} %</td>
+                  {% endif %}
                 {% endif %}
                 <td>{{ row.currency }}</td>
                 <td>
