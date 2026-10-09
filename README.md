@@ -1,4 +1,4 @@
-# Mine aktier
+# Aktiebogen
 
 En lille hjemmeside, der kører lokalt på din Mac og holder styr på dine aktier. Kurserne hentes fra Yahoo Finance, så der skal ikke bruges nogen API-nøgle.
 
