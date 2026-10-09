@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ ticker }} – Mine aktier</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main>
+    <p class="back"><a href="{{ url_for('index') }}">← Tilbage til mine aktier</a></p>
+    <h1 class="stock-name">{{ name or ticker }}</h1>
+    {% if name %}
+      <div class="muted">{{ ticker }}</div>
+    {% endif %}
+
+    {% if error %}
+      <p class="error" role="alert">{{ error }}</p>
+    {% else %}
+      {% set tone = 'gain' if change > 0 else ('loss' if change < 0 else '') %}
+      <div class="summary">
+        <div class="summary-group">
+          <div>
+            <div class="summary-label">Kurs nu</div>
+            <div class="summary-value">{{ price | amount }} {{ currency }}</div>
+          </div>
+          <div>
+            <div class="summary-label">Udvikling, {{ periods[period] | lower }}</div>
+            <div class="summary-value {{ tone }}">{{ '+' if change > 0 }}{{ change_pct | amount }} %</div>
+          </div>
+        </div>
+        <nav class="periods" aria-label="Periode">
+          {% for key, label in periods.items() %}
+            <a href="{{ url_for('stock', ticker=ticker, period=key) }}"
+               {% if key == period %}aria-current="true"{% endif %}>{{ label }}</a>
+          {% endfor %}
+        </nav>
+      </div>
+
+      <div class="chart" id="chart" data-currency="{{ currency }}"
+           data-label="Kursgraf for {{ name or ticker }}, {{ periods[period] | lower }}"></div>
+      <script id="chart-data" type="application/json">{{ points | tojson }}</script>
+      <script src="{{ url_for('static', filename='chart.js') }}"></script>
+    {% endif %}
+  </main>
+</body>
+</html>

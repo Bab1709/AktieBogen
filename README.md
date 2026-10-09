@@ -21,7 +21,8 @@ python3 -m venv .venv
 
 ## Sådan bruger du den
 
-- Skriv ticker-symbolet, som Yahoo Finance bruger det, fx `AAPL` eller `NOVO-B.CO` for danske aktier.
+- Begynd at skrive et firmanavn eller et ticker-symbol i feltet "Aktie", fx `Novo Nordisk` eller `AAPL`. Mens du skriver, kommer der forslag frem. Vælg et med musen eller med piletasterne og Enter. Børsen står ud for hvert forslag, så du kan vælge den rigtige udgave, fx `NOVO-B.CO` for København.
+- Klik på en aktie i tabellen for at se dens kursgraf. Over grafen vælger du periode fra 1 måned til hele aktiens historik, og når du fører musen hen over grafen, ser du kursen på den enkelte dag.
 - Købskurs er valgfri. Lader du feltet stå tomt, bruges lukkekursen på købsdatoen, eller seneste lukkekurs før den, hvis datoen er en weekend eller helligdag.
 - Beløb vises i aktiens egen valuta, som står i kolonnen "Valuta". Med knapperne "Aktiens valuta" og "DKK" over tabellen kan du skifte til at se alle beløb i danske kroner. Dit valg huskes i browseren.
 - "Samlet værdi" er den nuværende værdi af alle dine aktier lagt sammen og vises altid i DKK.

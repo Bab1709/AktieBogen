@@ -82,3 +82,64 @@ def get_dividends_since(ticker: str, day: date) -> float:
         _dividend_cache[ticker] = (time.monotonic(), payouts)
     # Shares bought on the ex-dividend date itself do not get that dividend.
     return sum(amount for ex_date, amount in payouts if ex_date > day)
+
+
+SEARCH_TYPES = {"EQUITY", "ETF"}
+_search_cache = {}
+
+
+def search(query: str) -> list[dict]:
+    """Return stocks whose ticker or company name matches `query`, best match first."""
+    key = query.strip().lower()
+    if not key:
+        return []
+    cached = _search_cache.get(key)
+    if cached and time.monotonic() - cached[0] < DIVIDEND_CACHE_SECONDS:
+        return cached[1]
+    try:
+        quotes = yf.Search(key, max_results=10, news_count=0).quotes
+    except Exception as exc:
+        raise PriceError("Kunne ikke søge efter aktier lige nu.") from exc
+    results = [
+        {
+            "symbol": quote["symbol"],
+            # Yahoo pads some names with runs of spaces.
+            "name": " ".join((quote.get("longname") or quote.get("shortname") or "").split()),
+            "exchange": quote.get("exchDisp") or "",
+        }
+        for quote in quotes
+        if quote.get("symbol") and quote.get("quoteType") in SEARCH_TYPES
+    ]
+    _search_cache[key] = (time.monotonic(), results)
+    return results
+
+
+def get_name(ticker: str) -> str | None:
+    """Return the company name for `ticker`, or None if it cannot be found."""
+    try:
+        matches = search(ticker)
+    except PriceError:
+        return None
+    return next((m["name"] for m in matches if m["symbol"].upper() == ticker.upper() and m["name"]), None)
+
+
+# How far back each chart period goes and how far apart its points are.
+HISTORY_PERIODS = {"1mo": "1d", "6mo": "1d", "1y": "1d", "5y": "1wk", "max": "1mo"}
+_history_cache = {}
+
+
+def get_history(ticker: str, period: str) -> list[tuple[str, float]]:
+    """Return (date, closing price) pairs for `period`, oldest first, cached for a few minutes."""
+    cached = _history_cache.get((ticker, period))
+    if cached and time.monotonic() - cached[0] < CACHE_SECONDS:
+        return cached[1]
+    try:
+        history = yf.Ticker(ticker).history(period=period, interval=HISTORY_PERIODS[period], auto_adjust=False)
+    except Exception as exc:
+        raise PriceError(f"Kunne ikke hente kurser for {ticker}.") from exc
+    closes = history["Close"].dropna() if "Close" in history else []
+    if len(closes) < 2:
+        raise PriceError(f"Ingen kurshistorik fundet for {ticker}.")
+    points = [(when.date().isoformat(), float(close)) for when, close in closes.items()]
+    _history_cache[(ticker, period)] = (time.monotonic(), points)
+    return points
