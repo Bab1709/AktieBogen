@@ -87,6 +87,42 @@ button.delete {
   border-radius: 6px;
 }
 
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: 24px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.summary-label {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.summary-value {
+  font-size: 26px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+form.toggle {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+form.toggle button[aria-pressed="false"] {
+  color: var(--text);
+  background: transparent;
+  border-color: var(--border);
+}
+
 .table-wrap {
   margin-top: 24px;
   overflow-x: auto;

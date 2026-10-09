@@ -23,7 +23,9 @@ python3 -m venv .venv
 
 - Skriv ticker-symbolet, som Yahoo Finance bruger det, fx `AAPL` eller `NOVO-B.CO` for danske aktier.
 - Købskurs er valgfri. Lader du feltet stå tomt, bruges lukkekursen på købsdatoen, eller seneste lukkekurs før den, hvis datoen er en weekend eller helligdag.
-- Beløb vises i aktiens egen valuta, som står i kolonnen "Valuta".
+- Beløb vises i aktiens egen valuta, som står i kolonnen "Valuta". Med knapperne "Aktiens valuta" og "DKK" over tabellen kan du skifte til at se alle beløb i danske kroner. Dit valg huskes i browseren.
+- "Samlet værdi" er den nuværende værdi af alle dine aktier lagt sammen og vises altid i DKK.
+- Omregning til DKK bruger dagens valutakurs fra Yahoo Finance, også for købskurs og udbytte. Gevinst/tab i DKK viser derfor ikke, hvad kronekursen har ændret sig siden købet.
 - Kolonnen "Udbytte" viser, hvor meget du har fået i udbytte siden købsdatoen for dit antal aktier, før skat. Aktier uden udbytte viser 0,00.
 - Har aktien haft et aktiesplit, siden du købte, så skriv det antal aktier, du har i dag, og købskursen omregnet til efter splittet. Den automatiske lukkekurs er allerede omregnet.
 
