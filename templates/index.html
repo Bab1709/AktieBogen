@@ -11,9 +11,16 @@
     <h1>Mine aktier</h1>
 
     <form class="add" method="post" action="{{ url_for('add') }}">
-      <label>Ticker
-        <input name="ticker" placeholder="AAPL eller NOVO-B.CO" value="{{ form.get('ticker', '') }}" required autofocus>
-      </label>
+      <div class="field">
+        <label for="ticker">Aktie</label>
+        <div class="combo">
+          <input id="ticker" name="ticker" placeholder="Søg på navn eller ticker, fx Novo Nordisk"
+                 value="{{ form.get('ticker', '') }}" required autofocus autocomplete="off"
+                 role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="suggestions"
+                 data-search-url="{{ url_for('search') }}">
+          <ul id="suggestions" class="suggestions" role="listbox" aria-label="Forslag til aktier" hidden></ul>
+        </div>
+      </div>
       <label>Antal
         <input name="shares" inputmode="decimal" value="{{ form.get('shares', '') }}" required>
       </label>
@@ -66,7 +73,7 @@
           <tbody>
             {% for row in rows %}
               <tr>
-                <td>{{ row.ticker }}</td>
+                <td><a href="{{ url_for('stock', ticker=row.ticker) }}" title="Se kursgraf for {{ row.ticker }}">{{ row.ticker }}</a></td>
                 <td class="num">{{ row.shares | quantity }}</td>
                 <td>{{ row.buy_date }}</td>
                 <td class="num">{{ row.buy_price | amount }}</td>
@@ -101,5 +108,6 @@
       <p class="muted">Du har ikke tilføjet nogen aktier endnu.</p>
     {% endif %}
   </main>
+  <script src="{{ url_for('static', filename='search.js') }}"></script>
 </body>
 </html>

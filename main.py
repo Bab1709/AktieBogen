@@ -1,8 +1,9 @@
 # Entry point for the project.
+import re
 from datetime import date
 from urllib.parse import urlparse
 
-from flask import Flask, abort, redirect, render_template, request, url_for
+from flask import Flask, abort, jsonify, redirect, render_template, request, url_for
 
 import portfolio
 import prices
@@ -11,6 +12,10 @@ app = Flask(__name__)
 
 # Remembers whether amounts are shown in each stock's own currency or in DKK.
 DISPLAY_COOKIE = "display_currency"
+# The periods the chart page offers, in the order they are shown.
+CHART_PERIODS = {"1mo": "1 md.", "6mo": "6 mdr.", "1y": "1 år", "5y": "5 år", "max": "Maks"}
+# The characters Yahoo Finance uses in ticker symbols.
+TICKER_PATTERN = re.compile(r"[A-Z0-9.\-=^]{1,20}")
 
 
 @app.template_filter("amount")
@@ -132,6 +137,40 @@ def add():
 
     portfolio.add(ticker, shares, buy_date.isoformat(), buy_price, currency)
     return redirect(url_for("index"))
+
+
+@app.get("/search")
+def search():
+    try:
+        return jsonify(prices.search(request.args.get("q", "")[:50]))
+    except prices.PriceError as exc:
+        return jsonify(error=str(exc)), 502
+
+
+@app.get("/stock/<ticker>")
+def stock(ticker: str):
+    ticker = ticker.upper()
+    if not TICKER_PATTERN.fullmatch(ticker):
+        abort(404)
+    period = request.args.get("period")
+    if period not in CHART_PERIODS:
+        period = "1y"
+    context = dict(ticker=ticker, name=prices.get_name(ticker), period=period, periods=CHART_PERIODS)
+    try:
+        price, currency = prices.get_current(ticker)
+        points = prices.get_history(ticker, period)
+    except prices.PriceError as exc:
+        return render_template("stock.html", error=str(exc), **context), 404
+    change = points[-1][1] - points[0][1]
+    return render_template(
+        "stock.html",
+        price=price,
+        currency=currency,
+        points=points,
+        change=change,
+        change_pct=change / points[0][1] * 100,
+        **context,
+    )
 
 
 @app.post("/display")
